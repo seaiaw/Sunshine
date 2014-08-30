@@ -6,6 +6,15 @@
     <string name="action_settings">Settings</string>
     <string name="action_refresh" translatable="false">Refresh</string>
     <string name="hello_blank_fragment">Hello blank fragment</string>
-    <string name="title_activity_detail">DetailActivity</string>
+    <string name="title_activity_detail">Detail</string>
+    <string name="title_activity_settings">Settings</string>
 
+    <!-- Label for Location Preference [CHAR_LIMIT = 30] -->
+    <string name="pref_location_label">Location</string>
+
+    <!-- Key name for storing Location Preference in SharedPreferences [CHAR_LIMIT = NONE] -->
+    <string name="pref_location_key" translatable="false">location</string>
+
+    <!-- Default postal code for Location Preference in SharedPreferences [CHAR_LIMIT = NONE] -->
+    <string name="pref_location_default" translatable="false">94043</string>
 </resources>
