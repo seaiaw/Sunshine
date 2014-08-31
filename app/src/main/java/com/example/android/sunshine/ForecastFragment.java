@@ -53,6 +53,12 @@ public class ForecastFragment extends Fragment {
     }
 
     @Override
+    public void onStart() {
+        super.onStart();
+        updateWeather();
+    }
+
+    @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         // Inflate the menu; this adds items to the action bar if it is present.
         inflater.inflate(R.menu.forecastfragment, menu);
@@ -62,13 +68,7 @@ public class ForecastFragment extends Fragment {
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         if (id == R.id.action_refresh) {
-            SharedPreferences sharedPreferences = PreferenceManager
-                            .getDefaultSharedPreferences(getActivity());
-            String postalCode = sharedPreferences.getString(
-                    getString(R.string.pref_location_key),
-                    getString(R.string.pref_location_default)
-            );
-            new FetchWeatherTask().execute(postalCode);
+            updateWeather();
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -76,28 +76,31 @@ public class ForecastFragment extends Fragment {
 
     private ArrayAdapter<String> mForecastAdapter;
 
+    private void updateWeather() {
+        SharedPreferences sharedPreferences = PreferenceManager
+                                                .getDefaultSharedPreferences(getActivity());
+        String postalCode = sharedPreferences.getString(
+                getString(R.string.pref_location_key),
+                getString(R.string.pref_location_default)
+        );
+        String temperatureUnit = sharedPreferences.getString(
+                getString(R.string.pref_unit_key),
+                getString(R.string.pref_unit_default)
+        );
+        new FetchWeatherTask().execute(postalCode, temperatureUnit);
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
 
-        String[] forecastArray = {
-                "Today - Sunny - 88/63",
-                "Tomorrow - Foggy - 70/40",
-                "Weds - Cloudy - 72/63",
-                "Thurs - Asteroids - 75/65",
-                "Fri - Heavy Rain - 65/56",
-                "Sat - HELP TRAPPED IN WEATHERSTATION - 68/51",
-                "Sun - Sunny - 80/68"
-        };
-        ArrayList<String> weekForecast = new ArrayList<String>(Arrays.asList(forecastArray));
         mForecastAdapter =
                 new ArrayAdapter<String>(
                         getActivity(),                      // the current context (this activity)
                         R.layout.list_item_forecast,        // the name of layout ID
                         R.id.list_item_forecast_textview,   // the ID of the textview to populate
-                        weekForecast);                      // source data
+                        new ArrayList<String>());                      // source data
 
         ListView listView = (ListView) rootView.findViewById(R.id.listview_forecast);
         listView.setAdapter(mForecastAdapter);
@@ -133,6 +136,7 @@ public class ForecastFragment extends Fragment {
             // For presentation, assume the user doesn't care about tenths of a degree.
             long roundedHigh = Math.round(high);
             long roundedLow = Math.round(low);
+
 
             String highLowStr = roundedHigh + "/" + roundedLow;
             return highLowStr;
@@ -212,7 +216,7 @@ public class ForecastFragment extends Fragment {
                 Uri buildURL = Uri.parse(FORECASE_BASE_URL).buildUpon()
                                 .appendQueryParameter("q", params[0])
                                 .appendQueryParameter("mode", "json")
-                                .appendQueryParameter("units", "metric")
+                                .appendQueryParameter("units", params[1])
                                 .appendQueryParameter("cnt", "7")
                                 .build();
 

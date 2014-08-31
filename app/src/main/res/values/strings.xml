@@ -12,9 +12,18 @@
     <!-- Label for Location Preference [CHAR_LIMIT = 30] -->
     <string name="pref_location_label">Location</string>
 
+    <!-- Label for Unit Preference [CHAR_LIMIT = 30] -->
+    <string name="pref_unit_label">Temperature Units</string>
+
     <!-- Key name for storing Location Preference in SharedPreferences [CHAR_LIMIT = NONE] -->
     <string name="pref_location_key" translatable="false">location</string>
 
+    <!-- Key name for storing Temperature Unit Preference in SharedPreferences [CHAR_LIMIT = NONE] -->
+    <string name="pref_unit_key" translatable="false">temperature_unit</string>
+
     <!-- Default postal code for Location Preference in SharedPreferences [CHAR_LIMIT = NONE] -->
     <string name="pref_location_default" translatable="false">94043</string>
+
+    <!-- Default value for Unit Preference in SharedPreferences [CHAR_LIMIT = NONE] -->
+    <string name="pref_unit_default" translatable="false">metric</string>
 </resources>
