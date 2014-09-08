@@ -1,10 +1,13 @@
 package com.example.android.sunshine;
 
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.content.Intent;
+import android.net.Uri;
 
 
 public class MainActivity extends ActionBarActivity {
@@ -36,6 +39,26 @@ public class MainActivity extends ActionBarActivity {
         int id = item.getItemId();
         if (id == R.id.action_settings) {
             startActivity(new Intent(this, SettingsActivity.class));
+            return true;
+        } else if (id == R.id.action_map) {
+            // Get postal code information from SharedPreferences
+            SharedPreferences sharedPreferences =
+                    PreferenceManager.getDefaultSharedPreferences(this);
+            String postalCode = sharedPreferences.getString(
+                    getString(R.string.pref_location_key),
+                    getString(R.string.pref_location_default)
+            );
+            Uri geoQuery = Uri.parse("geo:0,0").buildUpon()
+                            .appendQueryParameter("q", postalCode)
+                            .build();
+
+            Intent mapIntent = new Intent(Intent.ACTION_VIEW).setData(geoQuery);
+
+            if (mapIntent.resolveActivity(getPackageManager()) != null) {
+                startActivity(mapIntent);
+            } else {
+            }
+
             return true;
         }
         return super.onOptionsItemSelected(item);
