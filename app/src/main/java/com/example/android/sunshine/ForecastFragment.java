@@ -83,11 +83,8 @@ public class ForecastFragment extends Fragment {
                 getString(R.string.pref_location_key),
                 getString(R.string.pref_location_default)
         );
-        String temperatureUnit = sharedPreferences.getString(
-                getString(R.string.pref_unit_key),
-                getString(R.string.pref_unit_default)
-        );
-        new FetchWeatherTask().execute(postalCode, temperatureUnit);
+
+        new FetchWeatherTask().execute(postalCode);
     }
 
     @Override
@@ -100,7 +97,7 @@ public class ForecastFragment extends Fragment {
                         getActivity(),                      // the current context (this activity)
                         R.layout.list_item_forecast,        // the name of layout ID
                         R.id.list_item_forecast_textview,   // the ID of the textview to populate
-                        new ArrayList<String>());                      // source data
+                        new ArrayList<String>());           // source data
 
         ListView listView = (ListView) rootView.findViewById(R.id.listview_forecast);
         listView.setAdapter(mForecastAdapter);
@@ -125,7 +122,7 @@ public class ForecastFragment extends Fragment {
             // Because the API returns a unix timestamp (measured in seconds),
             // it must be converted to milliseconds in order to be converted to valid date.
             Date date = new Date(time * 1000);
-            SimpleDateFormat format = new SimpleDateFormat("E, MMM d");
+            SimpleDateFormat format = new SimpleDateFormat("E, MMM d"); // e.g. Tue, Jan 15
             return format.format(date).toString();
         }
 
@@ -133,6 +130,17 @@ public class ForecastFragment extends Fragment {
          *  Prepare the weather high/lows for presentation.
          */
         private String formatHighLows(double high, double low) {
+            SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(getActivity());
+            String prefUnit = sharedPref.getString(getString(R.string.pref_unit_key),
+                                                getString(R.string.pref_location_default));
+
+            if (prefUnit.equals(getString(R.string.pref_unit_imperial))) {
+                high = (high * 1.8) + 32;
+                low = (low * 1.8) + 32;
+            } else if (!prefUnit.equals(getString(R.string.pref_unit_metric))) {
+                Log.d(LOG_TAG, "Unit setting not supported.");
+            }
+
             // For presentation, assume the user doesn't care about tenths of a degree.
             long roundedHigh = Math.round(high);
             long roundedLow = Math.round(low);
@@ -216,7 +224,7 @@ public class ForecastFragment extends Fragment {
                 Uri buildURL = Uri.parse(FORECASE_BASE_URL).buildUpon()
                                 .appendQueryParameter("q", params[0])
                                 .appendQueryParameter("mode", "json")
-                                .appendQueryParameter("units", params[1])
+                                .appendQueryParameter("units", "metric")
                                 .appendQueryParameter("cnt", "7")
                                 .build();
 

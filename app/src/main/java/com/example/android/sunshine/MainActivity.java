@@ -8,6 +8,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.content.Intent;
 import android.net.Uri;
+import android.widget.Toast;
 
 
 public class MainActivity extends ActionBarActivity {
@@ -57,6 +58,7 @@ public class MainActivity extends ActionBarActivity {
             if (mapIntent.resolveActivity(getPackageManager()) != null) {
                 startActivity(mapIntent);
             } else {
+                Toast.makeText(this, "No matching app to handle request.", Toast.LENGTH_LONG).show();
             }
 
             return true;

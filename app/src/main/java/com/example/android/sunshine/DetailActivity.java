@@ -21,7 +21,7 @@ import android.os.Build;
 
 public class DetailActivity extends ActionBarActivity {
 
-    private final String TAG_NAME = DetailActivity.class.getSimpleName();
+    private final String LOG_TAG = DetailActivity.class.getSimpleName();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -101,10 +101,12 @@ public class DetailActivity extends ActionBarActivity {
 
             MenuItem shareItem = menu.findItem(R.id.action_share);
             mShareActionProvider = (ShareActionProvider) MenuItemCompat
-                                                                    .getActionProvider(shareItem);
+                                                    .getActionProvider(shareItem);
 
             if (mShareActionProvider != null) {
                 mShareActionProvider.setShareIntent(createShareIntent());
+            } else {
+                Log.d(LOG_TAG, "Share Action Provider is NULL?!");
             }
         }
     }
