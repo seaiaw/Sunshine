@@ -88,8 +88,8 @@ public class WeatherDbHelper extends SQLiteOpenHelper {
                 " UNIQUE (" + LocationEntry.COLUMN_LOCATION_SETTING +
                 ") ON CONFLICT IGNORE);";
 
-        sqLiteDatabase.execSQL(SQL_CREATE_WEATHER_TABLE);
         sqLiteDatabase.execSQL(SQL_CREATE_LOCATION_TABLE);
+        sqLiteDatabase.execSQL(SQL_CREATE_WEATHER_TABLE);
     }
 
     // only triggered when update database version
