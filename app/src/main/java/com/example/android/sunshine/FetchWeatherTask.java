@@ -1,12 +1,18 @@
 package com.example.android.sunshine;
 
+import android.content.ContentUris;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.ArrayAdapter;
+
+import com.example.android.sunshine.data.WeatherContract;
+import com.example.android.sunshine.data.WeatherContract.LocationEntry;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -69,6 +75,32 @@ public class FetchWeatherTask extends AsyncTask<String, Void, String[]>
         return highLowStr;
     }
 
+    private long addLocation(String locationSetting, String cityName, double lat, double lon) {
+        // First, check if this location exists in db
+        Cursor cursor = mContext.getContentResolver().query(
+                WeatherContract.LocationEntry.CONTENT_URI,
+                new String[]{ WeatherContract.LocationEntry._ID },
+                WeatherContract.LocationEntry.COLUMN_LOCATION_SETTING + " = ?",
+                new String[]{locationSetting},
+                null);
+
+        if (cursor.moveToFirst()) {
+            Log.v(LOG_TAG, "Found it in the database!");
+            int locationIdIndex = cursor.getColumnIndex(WeatherContract.LocationEntry._ID);
+            return cursor.getLong(locationIdIndex);
+        } else {
+            Log.v(LOG_TAG, "Didn't find it in the database, inserting now!");
+            ContentValues locationValues = new ContentValues();
+            locationValues.put(LocationEntry.COLUMN_LOCATION_SETTING, locationSetting);
+            locationValues.put(LocationEntry.COLUMN_CITY_NAME, cityName);
+            locationValues.put(LocationEntry.COLUMN_COORD_LAT, lat);
+            locationValues.put(LocationEntry.COLUMN_COORD_LONG, lon);
+            Uri locationUri = mContext.getContentResolver().insert(
+                    WeatherContract.LocationEntry.CONTENT_URI, locationValues);
+            return ContentUris.parseId(locationUri);
+        }
+    }
+
     /**
      * Take the String representing the complete forecast in JSON Format and
      * pull out the data we need to construct the Strings needed for wireframes.
@@ -111,6 +143,8 @@ public class FetchWeatherTask extends AsyncTask<String, Void, String[]>
         JSONObject coordJson = cityJson.getJSONObject(OWM_COORD);
         double cityLatitude = coordJson.getLong(OWM_COORD_LAT);
         double cityLongitude = coordJson.getLong(OWM_COORD_LONG);
+
+        long locationID = addLocation(locationSetting, cityName, cityLatitude, cityLongitude);
 
         Log.v(LOG_TAG, cityName + ", with coord: " + cityLatitude + " " + cityLongitude);
 
