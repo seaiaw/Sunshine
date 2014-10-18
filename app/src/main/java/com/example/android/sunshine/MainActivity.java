@@ -1,13 +1,11 @@
 package com.example.android.sunshine;
 
-import android.content.SharedPreferences;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.content.Intent;
-import android.net.Uri;
 import android.widget.Toast;
 
 
@@ -43,13 +41,9 @@ public class MainActivity extends ActionBarActivity {
             return true;
         } else if (id == R.id.action_map) {
             // Get postal code information from SharedPreferences
-            SharedPreferences sharedPreferences =
-                    PreferenceManager.getDefaultSharedPreferences(this);
-            String postalCode = sharedPreferences.getString(
-                    getString(R.string.pref_location_key),
-                    getString(R.string.pref_location_default)
-            );
-            Uri geoQuery = Uri.parse("geo:0,0").buildUpon()
+            String postalCode = Utility.getPreferredLocation(this);
+            Uri geoQuery = Uri.parse("geo:0,0")
+                            .buildUpon()
                             .appendQueryParameter("q", postalCode)
                             .build();
 
@@ -58,7 +52,8 @@ public class MainActivity extends ActionBarActivity {
             if (mapIntent.resolveActivity(getPackageManager()) != null) {
                 startActivity(mapIntent);
             } else {
-                Toast.makeText(this, "No matching app to handle request.", Toast.LENGTH_LONG).show();
+                Toast.makeText(this, "No matching app to handle request.", Toast.LENGTH_LONG)
+                        .show();
             }
 
             return true;
