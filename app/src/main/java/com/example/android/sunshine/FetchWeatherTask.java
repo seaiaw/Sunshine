@@ -8,6 +8,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.preference.PreferenceManager;
+import android.support.v4.widget.SimpleCursorAdapter;
 import android.util.Log;
 import android.widget.ArrayAdapter;
 
@@ -32,16 +33,14 @@ import java.util.Vector;
 /**
  * Created by seaiaw on 13/10/14.
  */
-public class FetchWeatherTask extends AsyncTask<String, Void, String[]>
+public class FetchWeatherTask extends AsyncTask<String, Void, Void>
 {
     private final String LOG_TAG = FetchWeatherTask.class.getSimpleName();
 
-    private ArrayAdapter<String> mForecastAdapter;
     private final Context mContext;
 
-    public FetchWeatherTask(Context context, ArrayAdapter<String> forecastAdapter) {
+    public FetchWeatherTask(Context context) {
         mContext = context;
-        mForecastAdapter = forecastAdapter;
     }
 
     private String getReadableDateString(long time) {
@@ -102,6 +101,7 @@ public class FetchWeatherTask extends AsyncTask<String, Void, String[]>
             return ContentUris.parseId(locationUri);
         }
     }
+
 
     /**
      * Take the String representing the complete forecast in JSON Format and
@@ -224,10 +224,10 @@ public class FetchWeatherTask extends AsyncTask<String, Void, String[]>
     }
 
     @Override
-    protected String[] doInBackground(String... params) {
+    protected Void doInBackground(String... params) {
         // if there is no zipcode, there is nothing to lookup.
         if (params.length == 0) {
-            return null;
+            // return null;
         }
 
         // These two need to be declared outside the try/catch
@@ -268,7 +268,7 @@ public class FetchWeatherTask extends AsyncTask<String, Void, String[]>
             if (inputStream == null) {
                 // Nothing to do.
                 // forecastJsonStr = null;
-                return null;
+                // return null;
             }
             reader = new BufferedReader(new InputStreamReader(inputStream));
 
@@ -304,24 +304,14 @@ public class FetchWeatherTask extends AsyncTask<String, Void, String[]>
             }
         }
 
-        try {
-            return getWeatherDataFromJson(forecastJsonStr, numDays, locationQuery);
-        } catch (JSONException e) {
-            Log.e(LOG_TAG, e.getMessage(), e);
-            e.printStackTrace();
-        }
+//        try {
+//            return getWeatherDataFromJson(forecastJsonStr, numDays, locationQuery);
+//        } catch (JSONException e) {
+//            Log.e(LOG_TAG, e.getMessage(), e);
+//            e.printStackTrace();
+//        }
 
         // This will only happen if there was an error getting or parsing the forecast.
         return null;
-    }
-
-    @Override
-    protected void onPostExecute(String[] result) {
-        if (result != null) {
-            mForecastAdapter.clear();
-            for (String dayForecastStr : result) {
-                mForecastAdapter.add(dayForecastStr);
-            }
-        }
     }
 }
