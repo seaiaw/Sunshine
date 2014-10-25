@@ -16,17 +16,14 @@ import com.example.android.sunshine.data.WeatherContract.WeatherEntry;
  * Created by seaiaw on 28/9/14.
  */
 public class WeatherProvider extends ContentProvider {
+    private static final UriMatcher sUriMatcher = buildUriMatcher();
+    private WeatherDbHelper mOpenHelper;
+
     private static final int WEATHER = 100;
     private static final int WEATHER_WITH_LOCATION = 101;
     private static final int WEATHER_WITH_LOCATION_AND_DATE = 102;
     private static final int LOCATION = 300;
     private static final int LOCATION_ID = 301;
-
-    private static final String LOG_TAG = ContentProvider.class.getSimpleName();
-
-    private static final UriMatcher sUriMatcher = buildUriMatcher();
-
-    private WeatherDbHelper mOpenHelper;
 
     private static final SQLiteQueryBuilder sWeatherByLocationSettingQueryBuilder;
 
@@ -278,19 +275,19 @@ public class WeatherProvider extends ContentProvider {
         final String authority = WeatherContract.CONTENT_AUTHORITY;
 
         matcher.addURI(authority,
-                WeatherEntry.CONTENT_URI.toString(),
+                WeatherContract.PATH_WEATHER,
                 WEATHER);
         matcher.addURI(authority,
-                WeatherEntry.CONTENT_URI.toString() + "/#",
+                WeatherContract.PATH_WEATHER+ "/*",
                 WEATHER_WITH_LOCATION);
         matcher.addURI(authority,
-                WeatherEntry.CONTENT_URI.toString() + "/#/*",
+                WeatherContract.PATH_WEATHER + "/*/*",
                 WEATHER_WITH_LOCATION_AND_DATE);
         matcher.addURI(authority,
-                LocationEntry.CONTENT_URI.toString(),
+                WeatherContract.PATH_LOCATION,
                 LOCATION);
         matcher.addURI(authority,
-                LocationEntry.CONTENT_URI.toString() + "/#",
+                WeatherContract.PATH_LOCATION + "/#",
                 LOCATION_ID);
 
         return matcher;

@@ -35,6 +35,8 @@ import java.util.Date;
  */
 public class ForecastFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
 
+    private SimpleCursorAdapter mForecastAdapter;
+
     private static final int FORECAST_LOADER = 0;
     private String mLocation;
 
@@ -68,34 +70,30 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
     }
 
     @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-        getLoaderManager().initLoader(FORECAST_LOADER, null, this);
-    }
-
-    @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
     }
 
     @Override
-    public void onStart() {
-        super.onStart();
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        inflater.inflate(R.menu.forecastfragment, menu);
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
-        if (mLocation != null && !mLocation.equals(Utility.getPreferredLocation(getActivity()))) {
-            getLoaderManager().restartLoader(FORECAST_LOADER, null, this);
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        if (id == R.id.action_refresh) {
+            updateWeather();
+            return true;
         }
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.fragment_main, container, false);
 
         mForecastAdapter = new SimpleCursorAdapter(
                 getActivity(),
@@ -140,6 +138,8 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
             }
         });
 
+        View rootView = inflater.inflate(R.layout.fragment_main, container, false);
+
         ListView listView = (ListView) rootView.findViewById(R.id.listview_forecast);
         listView.setAdapter(mForecastAdapter);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -147,17 +147,6 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
                 Cursor cursor = mForecastAdapter.getCursor();
                 if (cursor != null && cursor.moveToPosition(position)) {
-//                    String dateString = Utility.formatDate(cursor.getString(COL_WEATHER_DATE));
-//                    String weatherDescription = cursor.getString(COL_WEATHER_DESC);
-//
-//                    boolean isMetric = Utility.isMetric(getActivity());
-//                    String high = Utility.formatTemperature(
-//                            cursor.getDouble(COL_WEATHER_MAX_TEMP), isMetric);
-//                    String low = Utility.formatTemperature(
-//                            cursor.getDouble(COL_WEATHER_MIN_TEMP), isMetric);
-//
-//                    String detailString = String.format("%s - %s - %s/%s",
-//                            dateString, weatherDescription, high, low);
                     Intent intent = new Intent(getActivity(), DetailActivity.class)
                             .putExtra(DetailActivity.DATE_KEY, cursor.getString(COL_WEATHER_DATE));
                     startActivity(intent);
@@ -169,27 +158,22 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
     }
 
     @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        inflater.inflate(R.menu.forecastfragment, menu);
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        getLoaderManager().initLoader(FORECAST_LOADER, null, this);
+    }
+
+    private void updateWeather() {
+        String location = Utility.getPreferredLocation(getActivity());
+        new FetchWeatherTask(getActivity()).execute(location);
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
-        if (id == R.id.action_refresh) {
-            updateWeather();
-            return true;
+    public void onResume() {
+        super.onResume();
+        if (mLocation != null && !mLocation.equals(Utility.getPreferredLocation(getActivity()))) {
+            getLoaderManager().restartLoader(FORECAST_LOADER, null, this);
         }
-        return super.onOptionsItemSelected(item);
-    }
-
-    private SimpleCursorAdapter mForecastAdapter;
-
-    private void updateWeather() {
-        String postalCode = Utility.getPreferredLocation(getActivity());
-
-        new FetchWeatherTask(getActivity()).execute(postalCode);
     }
 
     @Override

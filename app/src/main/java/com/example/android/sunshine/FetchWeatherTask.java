@@ -36,7 +36,6 @@ import java.util.Vector;
 public class FetchWeatherTask extends AsyncTask<String, Void, Void>
 {
     private final String LOG_TAG = FetchWeatherTask.class.getSimpleName();
-
     private final Context mContext;
 
     public FetchWeatherTask(Context context) {
@@ -76,38 +75,47 @@ public class FetchWeatherTask extends AsyncTask<String, Void, Void>
         return highLowStr;
     }
 
+    /**
+     * Helper method to handle insertion of a new location in the weather database.
+     *
+     * @param locationSetting The location string used to request updates from the server.
+     * @param cityName A human-readable city name, e.g "Mountain View"
+     * @param lat the latitude of the city
+     * @param lon the longitude of the city
+     * @return the row ID of the added location.
+     */
     private long addLocation(String locationSetting, String cityName, double lat, double lon) {
-        // First, check if this location exists in db
+
+        // First, check if the location with this city name exists in the db
         Cursor cursor = mContext.getContentResolver().query(
-                WeatherContract.LocationEntry.CONTENT_URI,
-                new String[]{ WeatherContract.LocationEntry._ID },
-                WeatherContract.LocationEntry.COLUMN_LOCATION_SETTING + " = ?",
+                LocationEntry.CONTENT_URI,
+                new String[]{LocationEntry._ID},
+                LocationEntry.COLUMN_LOCATION_SETTING + " = ?",
                 new String[]{locationSetting},
                 null);
 
         if (cursor.moveToFirst()) {
-            Log.v(LOG_TAG, "Found it in the database!");
-            int locationIdIndex = cursor.getColumnIndex(WeatherContract.LocationEntry._ID);
+            int locationIdIndex = cursor.getColumnIndex(LocationEntry._ID);
             return cursor.getLong(locationIdIndex);
         } else {
-            Log.v(LOG_TAG, "Didn't find it in the database, inserting now!");
             ContentValues locationValues = new ContentValues();
             locationValues.put(LocationEntry.COLUMN_LOCATION_SETTING, locationSetting);
             locationValues.put(LocationEntry.COLUMN_CITY_NAME, cityName);
             locationValues.put(LocationEntry.COLUMN_COORD_LAT, lat);
             locationValues.put(LocationEntry.COLUMN_COORD_LONG, lon);
-            Uri locationUri = mContext.getContentResolver().insert(
-                    WeatherContract.LocationEntry.CONTENT_URI, locationValues);
-            return ContentUris.parseId(locationUri);
+
+            Uri locationInsertUri = mContext.getContentResolver()
+                    .insert(LocationEntry.CONTENT_URI, locationValues);
+
+            return ContentUris.parseId(locationInsertUri);
         }
     }
-
 
     /**
      * Take the String representing the complete forecast in JSON Format and
      * pull out the data we need to construct the Strings needed for wireframes.
      */
-    private String[] getWeatherDataFromJson(String forecastJsonStr, int numDays,
+    private void getWeatherDataFromJson(String forecastJsonStr, int numDays,
                                             String locationSetting)
             throws JSONException {
         // These are the names of the JSON objects that need to be extracted.
@@ -151,7 +159,9 @@ public class FetchWeatherTask extends AsyncTask<String, Void, Void>
         Log.v(LOG_TAG, cityName + ", with coord: " + cityLatitude + " " + cityLongitude);
 
         Vector<ContentValues> cVVector = new Vector<ContentValues>(weatherArray.length());
+
         String[] resultStrs = new String[numDays];
+
         for (int i = 0; i < weatherArray.length(); i++) {
             String description;
 
@@ -204,11 +214,6 @@ public class FetchWeatherTask extends AsyncTask<String, Void, Void>
             weatherValues.put(WeatherEntry.COLUMN_WEATHER_ID, weatherId);
 
             cVVector.add(weatherValues);
-
-            // For now, using the format "Day, description, hi/low"
-            String highAndLow = formatHighLows(high, low);
-            String day = getReadableDateString(dateTime);
-            resultStrs[i] = day + " - " + description + " - " + highAndLow;
         }
 
         // Inserting data to database
@@ -219,8 +224,6 @@ public class FetchWeatherTask extends AsyncTask<String, Void, Void>
                     .bulkInsert(WeatherEntry.CONTENT_URI, cvArray);
             Log.v(LOG_TAG, "inserted " + rowsInserted + " rows of weather data");
         }
-
-        return resultStrs;
     }
 
     @Override
@@ -304,12 +307,12 @@ public class FetchWeatherTask extends AsyncTask<String, Void, Void>
             }
         }
 
-//        try {
-//            return getWeatherDataFromJson(forecastJsonStr, numDays, locationQuery);
-//        } catch (JSONException e) {
-//            Log.e(LOG_TAG, e.getMessage(), e);
-//            e.printStackTrace();
-//        }
+        try {
+            getWeatherDataFromJson(forecastJsonStr, numDays, locationQuery);
+        } catch (JSONException e) {
+            Log.e(LOG_TAG, e.getMessage(), e);
+            e.printStackTrace();
+        }
 
         // This will only happen if there was an error getting or parsing the forecast.
         return null;

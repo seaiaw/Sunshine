@@ -31,9 +31,9 @@ public class WeatherContract {
     // back into date objects for comparison/processing.
     public static final String DATE_FORMAT = "yyyyMMdd";
 
-    public static final String CONTENT_AUTHORITY = "com.example.android.sunshine.app";
+    public static final String CONTENT_AUTHORITY = "com.example.android.sunshine";
 
-    public static final Uri BASE_CONTENT_URI = Uri.parse("content://m" + CONTENT_AUTHORITY);
+    public static final Uri BASE_CONTENT_URI = Uri.parse("content://" + CONTENT_AUTHORITY);
 
     public static final String PATH_WEATHER = "weather";
     public static final String PATH_LOCATION = "location";
