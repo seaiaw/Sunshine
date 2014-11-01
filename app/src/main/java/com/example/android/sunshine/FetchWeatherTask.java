@@ -166,7 +166,7 @@ public class FetchWeatherTask extends AsyncTask<String, Void, Void>
             String description;
 
             int humidity;
-            int weatherId;;
+            int weatherId;
             long dateTime;
             double pressure;
             double windSpeed;

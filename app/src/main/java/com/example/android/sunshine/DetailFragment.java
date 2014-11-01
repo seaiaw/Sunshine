@@ -17,6 +17,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.android.sunshine.data.WeatherContract;
@@ -42,11 +43,13 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
             WeatherContract.WeatherEntry.COLUMN_HUMIDITY,
             WeatherContract.WeatherEntry.COLUMN_PRESSURE,
             WeatherContract.WeatherEntry.COLUMN_WIND_SPEED,
-            WeatherContract.WeatherEntry.COLUMN_DEGREES
+            WeatherContract.WeatherEntry.COLUMN_DEGREES,
+            WeatherContract.WeatherEntry.COLUMN_WEATHER_ID
     };
 
     private ShareActionProvider mShareActionProvider;
 
+    private ImageView mWeatherImageView;
     private TextView mDayTextView;
     private TextView mDateTextView;
     private TextView mForecastTextView;
@@ -99,6 +102,8 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
         Log.v(LOG_TAG, "In onLoadFinished");
         if (!data.moveToFirst()) { return; }
 
+        int weatherId = data.getInt(data.getColumnIndex(
+                                        WeatherContract.WeatherEntry.COLUMN_WEATHER_ID));
         String dateString = Utility.formatDate(
                 data.getString(data.getColumnIndex(WeatherContract.WeatherEntry.COLUMN_DATETEXT)));
         String weatherDescription =
@@ -107,21 +112,28 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
         boolean isMetric = Utility.isMetric(getActivity());
         String high = Utility.formatTemperature(
                 getActivity(),
-                data.getDouble(data.getColumnIndex(WeatherContract.WeatherEntry.COLUMN_MAX_TEMP)), isMetric);
+                data.getDouble(data.getColumnIndex(WeatherContract.WeatherEntry.COLUMN_MAX_TEMP)),
+                                isMetric);
         String low = Utility.formatTemperature(
                 getActivity(),
-                data.getDouble(data.getColumnIndex(WeatherContract.WeatherEntry.COLUMN_MIN_TEMP)), isMetric);
+                data.getDouble(data.getColumnIndex(WeatherContract.WeatherEntry.COLUMN_MIN_TEMP)),
+                                isMetric);
 
-        float humidity = data.getFloat(data.getColumnIndex(WeatherContract.WeatherEntry.COLUMN_HUMIDITY));
-        float pressure = data.getFloat(data.getColumnIndex(WeatherContract.WeatherEntry.COLUMN_PRESSURE));
-        float windSpeed = data.getFloat(data.getColumnIndex(WeatherContract.WeatherEntry.COLUMN_WIND_SPEED));
-        float degrees = data.getFloat(data.getColumnIndex(WeatherContract.WeatherEntry.COLUMN_DEGREES));
+        float humidity = data.getFloat(data.getColumnIndex(
+                                        WeatherContract.WeatherEntry.COLUMN_HUMIDITY));
+        float pressure = data.getFloat(data.getColumnIndex(
+                                        WeatherContract.WeatherEntry.COLUMN_PRESSURE));
+        float windSpeed = data.getFloat(data.getColumnIndex(
+                                        WeatherContract.WeatherEntry.COLUMN_WIND_SPEED));
+        float degrees = data.getFloat(data.getColumnIndex(
+                                        WeatherContract.WeatherEntry.COLUMN_DEGREES));
 
         mForecastStr = String.format("%s - %s - %s/%s",
                 dateString, weatherDescription, high, low);
 
         Log.v(LOG_TAG, "Forecast String: " + mForecastStr);
 
+        mWeatherImageView.setImageResource(Utility.getArtResourceForWeatherCondition(weatherId));
         mDayTextView.setText(Utility.getDayName(getActivity(), dateString));
         mDateTextView.setText(dateString);
         mForecastTextView.setText(weatherDescription);
@@ -142,6 +154,7 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
             Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_detail, container, false);
+        mWeatherImageView = (ImageView) rootView.findViewById(R.id.detail_icon);
         mDayTextView = (TextView) rootView.findViewById(R.id.detail_day_textview);
         mDateTextView = (TextView) rootView.findViewById(R.id.detail_date_textview);
         mForecastTextView = (TextView) rootView.findViewById(R.id.detail_forecast_textview);
