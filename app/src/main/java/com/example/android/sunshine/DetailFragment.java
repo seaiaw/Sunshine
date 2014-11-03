@@ -30,6 +30,7 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
 
     private static final String LOG_TAG = com.example.android.sunshine.DetailFragment.class.getSimpleName();
     private static final String FORECAST_SHARE_HASHTAG = "#SunshineApp";
+    private static final String DATE_STRING = "DATE";
     private String mForecastStr;
 
     private static final int DETAIL_LOADER = 0;
@@ -64,25 +65,41 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
     }
 
     @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
-        getLoaderManager().initLoader(DETAIL_LOADER, null, this);
-        super.onActivityCreated(savedInstanceState);
+    public void onResume() {
+        super.onResume();
+        Bundle args = getArguments();
+        if (args != null && args.containsKey(DetailActivity.DATE_KEY)) {
+            getLoaderManager().restartLoader(DETAIL_LOADER, null, this);
+        }
     }
+
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+
+        Bundle args = getArguments();
+        if (args != null && args.containsKey(DetailActivity.DATE_KEY)) {
+            getLoaderManager().initLoader(DETAIL_LOADER, null, this);
+        }
+    }
+
+
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         Log.v(LOG_TAG, "In onCreateLoader");
-        Intent intent = getActivity().getIntent();
-        if (intent == null || !intent.hasExtra(DetailActivity.DATE_KEY)) {
+        Bundle arguments = getArguments();
+        if (arguments == null || !arguments.containsKey(DetailActivity.DATE_KEY)) {
             return null;
         }
-        String forecastDate = intent.getStringExtra(DetailActivity.DATE_KEY);
+
+        String date = getArguments().getString(DetailActivity.DATE_KEY);
 
         // Sort order:  Ascending, by date.
         String sortOrder = WeatherContract.WeatherEntry.COLUMN_DATETEXT + " ASC";
 
         Uri weatherForLocationUri = WeatherContract.WeatherEntry.buildWeatherLocationWithDate(
-                Utility.getPreferredLocation(getActivity()), forecastDate);
+                Utility.getPreferredLocation(getActivity()), date);
         Log.v(LOG_TAG, weatherForLocationUri.toString());
 
         // Now create and return a CursorLoader that will take care of

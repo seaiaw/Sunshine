@@ -5,4 +5,8 @@
         <!-- Customize your theme here. -->
     </style>
 
+    <style name="ForecastListStyle">
+        <!-- Here it's a stub. Two pane mode has different style for screen of sufficient width. -->
+    </style>
+
 </resources>

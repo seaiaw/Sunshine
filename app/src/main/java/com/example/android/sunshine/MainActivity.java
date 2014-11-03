@@ -1,5 +1,6 @@
 package com.example.android.sunshine;
 
+import android.support.v4.app.FragmentTransaction;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -9,16 +10,25 @@ import android.view.MenuItem;
 import android.widget.Toast;
 
 
-public class MainActivity extends ActionBarActivity {
+public class MainActivity extends ActionBarActivity implements ForecastFragment.Callback {
+
+    private static boolean mTwoPane;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        if (savedInstanceState == null) {
-            getSupportFragmentManager().beginTransaction()
-                    .add(R.id.container, new ForecastFragment())
-                    .commit();
+
+        if (findViewById(R.id.weather_detail_container) != null) {
+            mTwoPane = true;
+
+            if (savedInstanceState == null) {
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.weather_detail_container, new DetailFragment())
+                        .commit();
+            }
+        } else {
+            mTwoPane = false;
         }
     }
 
@@ -61,4 +71,26 @@ public class MainActivity extends ActionBarActivity {
         return super.onOptionsItemSelected(item);
     }
 
+
+    @Override
+    public void onItemSelected(String date) {
+        if (mTwoPane) {
+            Bundle args = new Bundle();
+            args.putString(DetailActivity.DATE_KEY, date);
+
+            DetailFragment fragment = new DetailFragment();
+            fragment.setArguments(args);
+
+            getSupportFragmentManager().beginTransaction()
+                .replace(R.id.weather_detail_container, fragment)
+                .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
+                .commit();
+
+
+        } else {
+            Intent intent = new Intent(this, DetailActivity.class)
+                    .putExtra(DetailActivity.DATE_KEY, date);
+            startActivity(intent);
+        }
+    }
 }
