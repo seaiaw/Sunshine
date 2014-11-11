@@ -160,6 +160,8 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
         mPressureTextView.setText(Utility.getFormattedPressure(getActivity(), pressure));
         mWindSpeedTextView.setText(Utility.getFormattedWind(getActivity(), windSpeed, degrees));
 
+        // Improve accessibility, voice over description on the image.
+        mWeatherImageView.setContentDescription(weatherDescription);
     }
 
     @Override
